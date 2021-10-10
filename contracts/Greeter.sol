@@ -1,22 +1,50 @@
-//SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
+contract Ballot{
+    address[] public players;
+    mapping(address=>uint256) public balances;
+    address public manager;
+    uint256 money = 100;
 
-contract Greeter {
-    string private greeting;
-
-    constructor(string memory _greeting) {
-        console.log("Deploying a Greeter with greeting:", _greeting);
-        greeting = _greeting;
+    constructor () {
+        manager = msg.sender;
     }
 
-    function greet() public view returns (string memory) {
-        return greeting;
+    modifier restricted() {
+        require(msg.sender == manager, "only manager can execute this function");
+        _;
     }
 
-    function setGreeting(string memory _greeting) public {
-        console.log("Changing greeting from '%s' to '%s'", greeting, _greeting);
-        greeting = _greeting;
+    function enterBallot() public payable{
+        require(msg.value > 0.01 ether, "BALLOT: Not enough ether in account");
+        balances[msg.sender] += msg.value;
+        players.push(msg.sender);
     }
+    function random() private view returns(uint){
+        return uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp, players)));
+    }
+    
+    function pickWinner() public view restricted returns(address){
+        uint random_number = random() % players.length;
+        address winner =  players[random_number];
+        return winner;
+    }
+    
+    function distributeReward(address payable winner) public restricted{
+        uint rewardAmount = address(this).balance;
+        winner.transfer(rewardAmount);
+    }
+        
+    function resetBallot() restricted public{
+        players = new address[](0);
+    }
+
+    function getPlayers() public view returns(address[] memory){
+        return players;
+    }
+    function getAtStake() public view returns(uint256){
+        return address(this).balance;
+    }
+    
+    
 }
