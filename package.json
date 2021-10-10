@@ -24,7 +24,6 @@
     "svelte": "^3.42.6",
     "tailwindcss": "^2.2.16"
   },
-  "type": "module",
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
